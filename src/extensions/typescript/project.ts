@@ -60,6 +60,7 @@ export class TypescriptProject {
 
   public async injectTypes(types: FileMap) {
     const ts = await this.env();
+    /*
     for (const [name, content] of Object.entries(types)) {
       if (!content.trim()) {
         continue;
@@ -68,6 +69,7 @@ export class TypescriptProject {
       // if tsserver has initialized, we must add files to it, modifying the FS will do nothing
       ts.createFile(name, content);
     }
+    */
   }
 
   public async env(): Promise<VirtualTypeScriptEnvironment> {

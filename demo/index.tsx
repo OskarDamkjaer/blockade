@@ -1,142 +1,161 @@
+import { parse } from "papaparse";
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
-import { Editor, FileMap, PrismaQuery } from "../src/lib";
+import { basicBot, killerBot, playerStarter, randomBot } from "./builtinBots";
+import { CodeEditor } from "./code-editor";
+import { currentPlayer, posContainsPawn } from "./game";
+import { createGameState, doTurn, nextTurnOptions } from "./gameAPI";
+import { requestTurn } from "./helpers";
+import "./input.css";
+// @ts-ignore
+import mal from "./plan.jpg";
+import { SpotView } from "./spot";
 
-const tsCode: string = `import { PrismaClient } from "@prisma/client"
-const prisma = new PrismaClient()
+export type SpreadsheetEntry = {
+  "Author name": string;
+  "Bot Image link": string | null;
+  "Bot name": string;
+  Code: string;
+  Vetted: boolean | null;
+};
 
-await prisma.artist.findMany()
+export const nameRow = (e: SpreadsheetEntry) =>
+  `${e["Author name"]}s - ${e["Bot name"]}`;
 
-await prisma.artist.findMany({
-  where: {
-    Name: {
-      startsWith: "F"
-    }
-  }
-})
-
-const fn = async (value: string) => {
-\tconst x = 1
-\tawait prisma.album.findUnique({ where: { error: 1 } })
-}
-
-await prisma.$executeRaw(\`SELECT * FROM "Album"\`)
-
-async function fn(value: string) {
-\tconst x = 1
-
-}
-
-await prisma.$disconnect()
-`;
-
-const ReactDemo = () => {
-  const [code, setCode] = useState(tsCode);
-  const [types, setTypes] = useState<FileMap>({});
+function App() {
+  const [bots, setBots] = useState<Record<string, SpreadsheetEntry>>({});
   useEffect(() => {
-    fetch("https://qc.prisma-adp.vercel.app/types/prisma-client.d.ts")
-      .then(r => r.text())
-      .then(fileContent => {
-        console.log("Fetched Prisma Client types, injecting");
-        setTypes({
-          "/node_modules/@prisma/client/index.d.ts": fileContent,
-        });
-      })
-      .catch(e => {
-        console.log("Failed to fetch Prisma Client types:", e);
+    fetch(
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vSqUDr_aXWAzwkjCB1N2lH5xanLTGpAhSMt3fYHdkLUP2On1Tkrkb8HFCSqrGCjXZYocNne_qOZwdbU/pub?gid=359820102&single=true&output=csv"
+    )
+      .then(res => res.text())
+      .then(data => {
+        const parsed = parse(data, { header: true, dynamicTyping: true })
+          .data as SpreadsheetEntry[];
+
+        setBots(
+          parsed
+            // only vet later
+            // .filter(b => b.Vetted)
+            .reduce((acc, curr) => {
+              // Deduplicates by name & author
+              return { ...acc, [nameRow(curr)]: curr };
+            }, {})
+        );
       });
   }, []);
+  const [state, setState] = useState(createGameState());
 
-  const [response, setResponse] = useState("");
-  const runPrismaClientQuery = async (query: PrismaQuery) => {
-    setResponse(JSON.stringify([{ loading: true }], null, 2));
+  window.onmessage = async ({ data }) => {
+    //console.log("winmess", data);
+    let turn: any = null;
+    try {
+      turn = JSON.parse(data);
+    } catch {}
 
-    // If ever changing the backend, run `yarn dev:api` to launch the backend in development mode, and replace the URL here with `http://localhost:3001/api/run`
-    const res = await fetch("http://localhost:3001/api/run", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ query, variables: { prisma: "prisma" } }),
-    }).then(r => r.json());
+    //await new Promise(res => setTimeout(res, 20));
+    const newState = doTurn(state, turn);
+    setState(newState);
 
-    console.log("Received response", res.response);
-    if (res.response.error) {
-      setResponse(JSON.stringify([{ error: res.response.error }], null, 2));
+    if (newState.winner) {
+      console.log(newState.winner + " won");
     } else {
-      setResponse(JSON.stringify(res.response.data, null, 2));
+      const nextTurn = nextTurnOptions(newState);
+      requestTurn(currentPlayer(newState), nextTurn);
     }
   };
 
+  const startGame = () => {
+    const restartedState = createGameState();
+    setState(restartedState);
+    requestTurn(currentPlayer(restartedState), nextTurnOptions(restartedState));
+  };
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateRows: "40px 1fr",
-        gridTemplateColumns: "40px 50% 22px 50%",
-        width: "100%",
-        height: "100%",
-        position: "relative",
-      }}
-    >
-      <div
-        style={{
-          gridColumn: "1 / -1",
-          gridRow: "1 / 2",
-          zIndex: 10,
-          boxShadow: "2px 0px 8px #0001",
-          borderBottom: "1px solid #E2E8F0",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <p style={{ fontFamily: "JetBrains Mono", fontSize: 12 }}>
-          This is only a demo of Prisma's text editors. To try out the query
-          console, head over to the{" "}
-          <a href="https://cloud.prisma.io" style={{ color: "#0EA5E9" }}>
-            Prisma Data Platform
-          </a>
-        </p>
+    <main className="flex gap-1">
+      <div className="min-w-[680px]">
+        <img src={mal} />
+        {state.field
+          .slice()
+          .reverse()
+          .map(row => (
+            <div className="absolute top-0" key={row[0].position.y}>
+              {row.map(spot => (
+                <span
+                  className="absolute"
+                  key={
+                    spot.position.x.toString() +
+                    ":" +
+                    spot.position.y.toString()
+                  }
+                  style={{
+                    left: `${spot.position.x * 38 + 21}px`,
+                    top: `${515 - spot.position.y * 38}px`,
+                  }}
+                >
+                  <SpotView
+                    spot={spot}
+                    pawn={posContainsPawn(state, spot.position)}
+                  />
+                </span>
+              ))}
+            </div>
+          ))}
+        <div className="max-w-[680px] w-[680px] p-2">
+          <h1 className="text-xl font-bold"> Rules! </h1>
+          <p className="mb-2">
+            Malefiz is a race to the goal spot on the top. On each players turn
+            they roll a 6 sided die and move any of their 5 five pawns as many
+            spaces as show on the die.
+          </p>
+          <p className="mb-2">
+            If you land on another players pawn, it's captured and sent back to
+            it's starting postion.{" "}
+          </p>
+          <p>
+            You are allowed to pass pawns, but not the "Barricades" (white spots
+            on the map). If you do capture a barricade, you have to move it to
+            an unoccupied spot on the map (it can't be put on the bottom row).
+          </p>
+          <p className="mb-2"></p>
+        </div>
       </div>
-
-      <div
-        style={{
-          gridColumn: "1 / 2",
-          gridRow: "2 / -1",
-          boxShadow: "2px 0px 8px #0001",
-          zIndex: 2,
-          borderRight: "1px solid #E2E8F0",
-        }}
-      ></div>
-      <Editor
-        lang="ts"
-        types={types}
-        value={code}
-        style={{
-          gridColumn: "2 / 3",
-          gridRow: "2 / -1",
-          boxShadow: "2px 0px 8px #0001",
-          zIndex: 1,
-          borderRight: "1px solid #E2E8F0",
-        }}
-        onChange={setCode}
-        onExecuteQuery={runPrismaClientQuery}
-      />
-
-      <Editor
-        lang="json"
-        readonly
-        value={response}
-        style={{ gridColumn: "3 / -1", gridRow: "2 / -1" }}
-      />
-    </div>
+      <span className="grow">
+        <span className="flex gap-1 mt-1">
+          <button
+            className="bg-lime-600 hover:bg-lime-800 text-white px-1 rounded"
+            onClick={startGame}
+          >
+            {state.turn > 0 && "re"}start game
+          </button>
+          <span className=""> turn: {state.turn}</span>
+          {state.winner && (
+            <span>
+              -
+              {state.winner === "BLUE"
+                ? " You (blue) win!"
+                : ` You lost, ${state.winner} won.`}
+            </span>
+          )}
+        </span>
+        <CodeEditor
+          player="BLUE"
+          defaultExpand
+          startingBot={playerStarter}
+          userBots={bots}
+          main
+        />
+        <h2 className="text-lg font-bold mt-1"> Other Bots </h2>
+        <CodeEditor userBots={bots} player="RED" startingBot={basicBot} />
+        <CodeEditor userBots={bots} player="YELLOW" startingBot={killerBot} />
+        <CodeEditor userBots={bots} player="GREEN" startingBot={randomBot} />
+      </span>
+    </main>
   );
-};
+}
 
 ReactDOM.render(
   <React.StrictMode>
-    <ReactDemo />
+    <App />
   </React.StrictMode>,
   document.getElementById("root")
 );

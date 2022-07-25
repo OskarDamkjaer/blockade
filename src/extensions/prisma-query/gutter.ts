@@ -1,6 +1,5 @@
 import { gutter as cmGutter, GutterMarker } from "@codemirror/gutter";
 import { Extension } from "@codemirror/state";
-import { EditorView } from "@codemirror/view";
 import { isCursorInRange } from "./find-cursor";
 import { prismaQueryStateField } from "./state";
 
@@ -60,22 +59,6 @@ export function gutter(): Extension {
           });
 
         return marker;
-      },
-    }),
-    // Gutter line marker styles
-    EditorView.baseTheme({
-      ".cm-gutterElement .cm-prismaQuery": {
-        height: "100%",
-
-        "&.invisible": {
-          borderLeft: "3px solid transparent",
-        },
-        "&.inactive": {
-          borderLeft: "3px solid #E2E8F0" /* blueGray-200 */,
-        },
-        "&.active": {
-          borderLeft: "3px solid #22C55E" /* green-500 */,
-        },
       },
     }),
   ];

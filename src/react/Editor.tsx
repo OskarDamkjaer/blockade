@@ -140,7 +140,7 @@ export class Editor extends React.Component<EditorProps> {
     // Only execute forceUpdate actions on readonly instances
     if (
       this.props.value !== this.editor.state.sliceDoc(0) &&
-      this.props.readonly
+      !this.props.readonly
     ) {
       this.editor.forceUpdate(this.props.value);
     }

@@ -32,7 +32,6 @@ export default async function types(req: VercelRequest, res: VercelResponse) {
   }
 
   const { query } = req.body as RequestBody;
-  console.log(query);
 
   const queryResponse = {
     error: null,

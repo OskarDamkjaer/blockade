@@ -159,34 +159,5 @@ export function lineNumbers(): Extension {
         },
       },
     }),
-
-    // Gutter line marker styles
-    EditorView.baseTheme({
-      ".cm-lineNumbers": {
-        display: "flex",
-
-        "& .cm-gutterElement": {
-          padding: "0 8px 0 0",
-        },
-      },
-      ".cm-gutterElement": { userSelect: "none" },
-      ".cm-prismaQueryRunButton": {
-        cursor: "pointer",
-        width: "24px",
-        height: "24",
-        color: "#E2E8F0" /* blueGray-200 */,
-
-        "&:hover": {
-          color: "#16A34A" /* green-600 */,
-        },
-        "&.active": {
-          color: "#22C55E" /* green-500 */,
-
-          "&:hover": {
-            color: "#16A34A" /* green-600 */,
-          },
-        },
-      },
-    }),
   ];
 }

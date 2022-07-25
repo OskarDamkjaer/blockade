@@ -4,16 +4,12 @@ import { appearance, setTheme, ThemeName } from "../extensions/appearance";
 import { behaviour } from "../extensions/behaviour";
 import { keymap as defaultKeymap } from "../extensions/keymap";
 import * as PrismaQuery from "../extensions/prisma-query";
-import {
-  FileMap,
-  injectTypes,
-  setDiagnostics,
-  typescript,
-} from "../extensions/typescript";
+import { FileMap, typescript } from "../extensions/typescript";
 import { logger } from "../logger";
 import { BaseEditor } from "./base-editor";
 
 const log = logger("ts-editor", "limegreen");
+export { transpile } from "../extensions/typescript";
 
 type TSEditorParams = {
   domElement: Element;
@@ -43,7 +39,6 @@ export class TSEditor extends BaseEditor {
         appearance({
           domElement: params.domElement,
           theme: params.theme,
-          highlightStyle: "none", // We'll let the prismaQuery extension handle the highlightStyle
         }),
 
         PrismaQuery.gutter(),
@@ -60,7 +55,6 @@ export class TSEditor extends BaseEditor {
           onEnterQuery: params.onEnterQuery,
           onLeaveQuery: params.onLeaveQuery,
         }),
-        PrismaQuery.highlightStyle(),
         PrismaQuery.keymap(),
       ],
     });
@@ -84,7 +78,7 @@ export class TSEditor extends BaseEditor {
   };
 
   public injectTypes = async (types: FileMap) => {
-    this.view.dispatch(injectTypes(types));
-    this.view.dispatch(await setDiagnostics(this.view.state));
+    //this.view.dispatch(injectTypes(types));
+    //this.view.dispatch(await setDiagnostics(this.view.state));
   };
 }

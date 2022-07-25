@@ -5,7 +5,6 @@ export const base: Extension = [
   EditorView.theme({
     "&": {
       fontSize: "14px",
-      fontFamily: "JetBrains Mono",
     },
     ".cm-scroller": { overflow: "auto" },
     ".cm-content": {},
@@ -121,7 +120,6 @@ export const base: Extension = [
     // Diagnostics (Lint issues) & Quickinfo (Hover tooltips)
     ".cm-diagnostic, .cm-quickinfo-tooltip": {
       padding: "0.5rem",
-      fontFamily: "JetBrains Mono",
     },
   }),
 ];

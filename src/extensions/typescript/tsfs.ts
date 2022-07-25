@@ -95,10 +95,6 @@ export class TSFS {
         // TS Core libs need to be available at the root path `/` (TSServer requires this)
         this.fs.set("/" + name, content);
       }),
-      this.forFileInLib("@types/node", (name, content) => {
-        // Additional libs need to be faked so they look like they're coming from node_modules (TSServer requires this)
-        this.fs.set("/node_modules/@types/node/" + name, content);
-      }),
     ]);
   };
 }

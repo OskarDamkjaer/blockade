@@ -29,6 +29,7 @@ import { onChangeCallback } from "../change-callback";
 import { log } from "./log";
 import { FileMap, TypescriptProject } from "./project";
 
+export { transpile } from "typescript";
 export { TypescriptProject };
 export type { FileMap };
 
