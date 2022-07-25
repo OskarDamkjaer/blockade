@@ -53,11 +53,11 @@ ${types}`,
 };
 
 export const playerStarter = {
-  name: "CustomBotStarter",
+  name: "YourBotNameHere",
   author: "you",
   code: `/* 
-Below you'll find a function "doTurn" selecting a random move.  
-It's up to you to improve it. 
+Below you'll find a typescript function "doTurn" selecting a random move.  
+It's up to you to improve it. ctrl + space for autocomplete.
 
 If your code does not return within ~200ms (not yet implemented)
  or selects an illegal move one will be chosen at random. 
@@ -72,7 +72,7 @@ function doTurn(boardState: {
   moves: Turn[];
 }): Turn {
   const {moves} = boardState
-  console.log(moves[0])
+  console.log(moves[0]) // visible in browser console
 
   const randomMove = moves[Math.floor(Math.random() * moves.length)]
   return randomMove
