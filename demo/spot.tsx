@@ -1,5 +1,5 @@
 import React from "react";
-import type { Pawn, Spot } from "./game";
+import type { Color, Pawn, Spot } from "./game";
 
 export let spot: Spot;
 export let pawn: Pawn | null;
@@ -11,7 +11,15 @@ export const colors = {
   BLUE: "rgb(49,113,183)",
 };
 
-export const SpotView = ({ spot, pawn }: { spot: Spot; pawn: Pawn | null }) => (
+export const SpotView = ({
+  spot,
+  pawn,
+  possibleMoveColor,
+}: {
+  spot: Spot;
+  pawn: Pawn | null;
+  possibleMoveColor?: Color;
+}) => (
   <div
     style={{
       borderRadius: "9999px",
@@ -26,8 +34,9 @@ export const SpotView = ({ spot, pawn }: { spot: Spot; pawn: Pawn | null }) => (
         : spot.contains === "NORMAL"
         ? "BLACK"
         : "inherit",
+      color: possibleMoveColor ? colors[possibleMoveColor] : "inherit",
     }}
   >
-    {pawn && pawn.number}
+    {possibleMoveColor ? "X" : pawn && pawn.number}
   </div>
 );

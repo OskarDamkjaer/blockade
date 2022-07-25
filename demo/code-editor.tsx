@@ -84,7 +84,7 @@ window.onmessage=(({data}) => {
           <input
             value={selected}
             onChange={s => setSel(s.target.value)}
-            className="w-48"
+            className="w-48 bg-gray-200"
           />
         ) : (
           <select value={selected} onChange={handleSubmit}>

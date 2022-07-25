@@ -1,5 +1,5 @@
 import { parse } from "papaparse";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useReducer, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { basicBot, killerBot, playerStarter, randomBot } from "./builtinBots";
 import { CodeEditor } from "./code-editor";
@@ -24,6 +24,8 @@ export const nameRow = (e: SpreadsheetEntry) =>
 
 function App() {
   const [bots, setBots] = useState<Record<string, SpreadsheetEntry>>({});
+  const [debuggerEnabled, toggle] = useReducer(a => !a, true);
+  const ref = useRef<HTMLInputElement>();
   useEffect(() => {
     fetch(
       "https://docs.google.com/spreadsheets/d/e/2PACX-1vSqUDr_aXWAzwkjCB1N2lH5xanLTGpAhSMt3fYHdkLUP2On1Tkrkb8HFCSqrGCjXZYocNne_qOZwdbU/pub?gid=359820102&single=true&output=csv"
@@ -53,7 +55,11 @@ function App() {
       turn = JSON.parse(data);
     } catch {}
 
-    //await new Promise(res => setTimeout(res, 20));
+    if (parseInt(ref.current.value) !== 3000) {
+      await new Promise(res =>
+        setTimeout(res, 3000 - parseInt(ref.current.value))
+      );
+    }
     const newState = doTurn(state, turn);
     setState(newState);
 
@@ -70,6 +76,8 @@ function App() {
     setState(restartedState);
     requestTurn(currentPlayer(restartedState), nextTurnOptions(restartedState));
   };
+
+  const nextTurn = nextTurnOptions(state);
   return (
     <main className="flex gap-1">
       <div className="min-w-[680px]">
@@ -95,6 +103,16 @@ function App() {
                   <SpotView
                     spot={spot}
                     pawn={posContainsPawn(state, spot.position)}
+                    possibleMoveColor={
+                      debuggerEnabled &&
+                      nextTurn.moves.find(
+                        m =>
+                          m.newSpot.position.x === spot.position.x &&
+                          m.newSpot.position.y === spot.position.y
+                      )
+                        ? nextTurn.myPawns[0].color
+                        : undefined
+                    }
                   />
                 </span>
               ))}
@@ -143,7 +161,27 @@ function App() {
           startingBot={playerStarter}
           userBots={bots}
           main
-        />
+        />{" "}
+        <div>
+          speed meter
+          <input
+            type="range"
+            ref={ref}
+            max="3000"
+            min="0"
+            className="m-1"
+            defaultValue="2500"
+          />
+          <label>
+            move debugger enabled:
+            <input
+              type="checkbox"
+              className="m-1"
+              checked={debuggerEnabled}
+              onChange={toggle}
+            />
+          </label>
+        </div>
         <h2 className="text-lg font-bold mt-1"> Other Bots </h2>
         <CodeEditor userBots={bots} player="RED" startingBot={basicBot} />
         <CodeEditor userBots={bots} player="YELLOW" startingBot={killerBot} />

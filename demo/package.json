@@ -6,7 +6,7 @@
   "scripts": {
     "build": "./build.sh",
     "dev": "vite",
-    "deploy": "vercel",
+    "deploy": "scp -r dist/  oskar@159.65.117.196:/home/oskar/abc",
     "preview": "yarn build && serve public"
   },
   "dependencies": { },
