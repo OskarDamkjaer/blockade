@@ -189,7 +189,7 @@ function App() {
         <h2 className="text-lg font-bold mt-1">
           disclaimer: check source before running player bots (no sandbox yet).
         </h2>
-        Basic, Killer and Random bot are built in
+        Basic, Killer, FirstIsBest and Random bot are built in
       </span>
     </main>
   );
