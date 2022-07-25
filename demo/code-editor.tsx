@@ -100,7 +100,7 @@ window.onmessage=(({data}) => {
             onClick={toggleSubmit}
             className="bg-blue-500 hover:bg-blue-800 text-white px-1 rounded"
           >
-            {openSubmit ? "hide form" : "submit bot to tournament "}
+            {openSubmit ? "hide form" : "upload bot"}
           </button>
         )}
         <button onClick={toggleExpanded}>
