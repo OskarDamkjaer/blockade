@@ -16,10 +16,7 @@ const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 /**
  * Convenient bag of useful extensions that control behaviour
  */
-export const behaviour = (config: {
-  lineNumbers?: boolean;
-  onChange?: OnChange;
-}): Extension => {
+export const behaviour = (config: { onChange?: OnChange }): Extension => {
   config = merge({ lineNumbers: true }, config);
 
   return [
@@ -55,8 +52,7 @@ export const behaviour = (config: {
         return svg as any;
       },
     }),
-    [config.lineNumbers ? lineNumbersGutter({}) : []],
-
+    lineNumbersGutter({}),
     history(),
     onChangeCallback(config.onChange),
   ];

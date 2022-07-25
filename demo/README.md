@@ -1,1 +1,3 @@
-# query-console-demo
+# usage
+
+see package.json

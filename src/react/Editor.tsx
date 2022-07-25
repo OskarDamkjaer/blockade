@@ -1,17 +1,9 @@
 import isEqual from "lodash/isEqual";
 import isEqualWith from "lodash/isEqualWith";
 import React, { CSSProperties } from "react";
-import {
-  FileMap,
-  JSONEditor,
-  PrismaQuery,
-  PrismaSchemaEditor,
-  SQLEditor,
-  ThemeName,
-  TSEditor,
-} from "../editor";
+import { FileMap, ThemeName, TSEditor } from "../editor";
 
-type LangEditor = TSEditor | JSONEditor | SQLEditor | PrismaSchemaEditor;
+type LangEditor = TSEditor;
 
 export type EditorProps = {
   /** (Controlled) Value of the editor.
@@ -37,10 +29,6 @@ export type EditorProps = {
       /** Additional Typescript types to load into the editor */
       types?: FileMap;
       /** Callback called when the user requests a query to be run */
-      onExecuteQuery?: (query: PrismaQuery) => void;
-      /** Callback called every time the user's cursor moves inside a query */
-      onEnterQuery?: (query: PrismaQuery) => void;
-      /** Callback called every time the user's cursor moves outside a query */
       onLeaveQuery?: () => void;
     }
   | {
@@ -70,39 +58,6 @@ export class Editor extends React.Component<EditorProps> {
           readonly: this.props.readonly,
           theme: this.props.theme,
           types: this.props.types,
-          onChange: this.props.onChange,
-          onExecuteQuery: this.props.onExecuteQuery,
-          onEnterQuery: this.props.onEnterQuery,
-          onLeaveQuery: this.props.onLeaveQuery,
-        });
-        break;
-
-      case "json":
-        this.editor = new JSONEditor({
-          domElement: this.ref.current!, // `!` is fine because this will run after the component has mounted
-          code: this.props.value,
-          readonly: this.props.readonly,
-          theme: this.props.theme,
-          onChange: this.props.onChange,
-        });
-        break;
-
-      case "sql":
-        this.editor = new SQLEditor({
-          domElement: this.ref.current!, // `!` is fine because this will run after the component has mounted
-          code: this.props.value,
-          readonly: this.props.readonly,
-          theme: this.props.theme,
-          onChange: this.props.onChange,
-        });
-        break;
-
-      case "prisma":
-        this.editor = new PrismaSchemaEditor({
-          domElement: this.ref.current!, // `!` is fine because this will run after the component has mounted
-          code: this.props.value,
-          readonly: this.props.readonly,
-          theme: this.props.theme,
           onChange: this.props.onChange,
         });
         break;

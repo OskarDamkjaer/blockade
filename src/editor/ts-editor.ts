@@ -3,7 +3,6 @@ import { EditorView } from "@codemirror/view";
 import { appearance, setTheme, ThemeName } from "../extensions/appearance";
 import { behaviour } from "../extensions/behaviour";
 import { keymap as defaultKeymap } from "../extensions/keymap";
-import * as PrismaQuery from "../extensions/prisma-query";
 import { FileMap, typescript } from "../extensions/typescript";
 import { logger } from "../logger";
 import { BaseEditor } from "./base-editor";
@@ -18,8 +17,6 @@ type TSEditorParams = {
   types?: FileMap;
   theme?: ThemeName;
   onChange?: (value: string) => void;
-  onExecuteQuery?: (query: PrismaQuery.PrismaQuery) => void;
-  onEnterQuery?: (query: PrismaQuery.PrismaQuery) => void;
   onLeaveQuery?: () => void;
 };
 
@@ -41,21 +38,13 @@ export class TSEditor extends BaseEditor {
           theme: params.theme,
         }),
 
-        PrismaQuery.gutter(),
         behaviour({
           lineNumbers: false, // We'll let the prismaQuery extension handle line numbers
           onChange: params.onChange,
         }),
         defaultKeymap(),
-        PrismaQuery.lineNumbers(),
 
         typescript(),
-        PrismaQuery.state({
-          onExecute: params.onExecuteQuery,
-          onEnterQuery: params.onEnterQuery,
-          onLeaveQuery: params.onLeaveQuery,
-        }),
-        PrismaQuery.keymap(),
       ],
     });
   }
