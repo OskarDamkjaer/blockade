@@ -6,7 +6,7 @@
   "scripts": {
     "build": "./build.sh",
     "dev": "vite",
-    "deploy": "yarn build && scp -r dist/  oskar@159.65.117.196:/home/oskar/abc",
+    "deploy": "yarn vite build && scp -r dist/  oskar@159.65.117.196:/home/oskar/malefiz-build",
     "preview": "yarn build && serve public"
   },
   "dependencies": { },
