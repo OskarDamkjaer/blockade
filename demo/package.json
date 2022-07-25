@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "build": "./build.sh",
+    "dev": "vite",
     "deploy": "vercel",
     "preview": "yarn build && serve public"
   },
