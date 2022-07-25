@@ -144,17 +144,19 @@ function App() {
       </div>
       <span className="grow">
         <span className="flex gap-1 mt-1">
-          <button
-            className="bg-lime-600 hover:bg-lime-800 text-white px-1 rounded"
-            onClick={startGame}
-          >
-            {/* multiple games running leads to concurr issues */}
-            {state.turn === 0
-              ? "start game"
-              : state.winner
-              ? "restart game"
-              : "running.."}
-          </button>
+          {/* multiple games running leads to concurr issues */}
+          {state.turn === 0 || state.winner ? (
+            <button
+              className="bg-lime-600 hover:bg-lime-800 text-white px-1 rounded"
+              onClick={startGame}
+            >
+              {" "}
+              {state.winner && "re"}start game
+            </button>
+          ) : (
+            "running..."
+          )}
+
           <span className=""> turn: {state.turn}</span>
           {state.winner && (
             <span>
