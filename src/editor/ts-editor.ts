@@ -39,7 +39,6 @@ export class TSEditor extends BaseEditor {
         }),
 
         behaviour({
-          lineNumbers: false, // We'll let the prismaQuery extension handle line numbers
           onChange: params.onChange,
         }),
         defaultKeymap(),
