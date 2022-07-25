@@ -72,9 +72,14 @@ function App() {
   };
 
   const startGame = () => {
-    const restartedState = createGameState();
-    setState(restartedState);
-    requestTurn(currentPlayer(restartedState), nextTurnOptions(restartedState));
+    if (state.turn === 0 || state.winner) {
+      const restartedState = createGameState();
+      setState(restartedState);
+      requestTurn(
+        currentPlayer(restartedState),
+        nextTurnOptions(restartedState)
+      );
+    }
   };
 
   const nextTurn = nextTurnOptions(state);
@@ -143,7 +148,12 @@ function App() {
             className="bg-lime-600 hover:bg-lime-800 text-white px-1 rounded"
             onClick={startGame}
           >
-            {state.turn > 0 && "re"}start game
+            {/* multiple games running leads to concurr issues */}
+            {state.turn === 0
+              ? "start game"
+              : state.winner
+              ? "restart game"
+              : "running.."}
           </button>
           <span className=""> turn: {state.turn}</span>
           {state.winner && (
