@@ -190,6 +190,13 @@ function App() {
           disclaimer: check source before running player bots (no sandbox yet).
         </h2>
         Basic, Killer, FirstIsBest and Random bot are built in
+        <a
+          target="_blank"
+          href="https://github.com/OskarDamkjaer/blockade"
+          className="underline text-blue-400 hover:text-blue-600 cursor-pointer my-2 block"
+        >
+          Github repo Link
+        </a>
       </span>
     </main>
   );
