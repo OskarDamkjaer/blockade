@@ -437,7 +437,7 @@ export function legalBarricadeSpots(state: GameState): Position[] {
   return state.field
     .reduce(flatten, [])
     .filter(spot => spot.contains === "NORMAL")
-    .filter(spot => !spot.unBarricadeable || !spot.startingPointColor)
+    .filter(spot => !spot.unBarricadeable && !spot.startingPointColor)
     .filter(spot => !posContainsPawn(state, spot.position))
     .map(spot => spot.position);
 }

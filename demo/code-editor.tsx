@@ -73,7 +73,7 @@ window.onmessage=(({data}) => {
         title="codeframe"
         id={playerConstants[player].iframeId}
         src="about:blank"
-        /* sandbox="allow-scripts" */
+        sandbox="allow-same-origin allow-scripts"
         style={{ display: "none" }}
       />
       <span className="flex mb-1 gap-1">
