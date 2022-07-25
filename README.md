@@ -1,5 +1,5 @@
-# Malefiz bot - game!
+# Malefiz bot battle!
 
-Ts editor is basically @prisma/text-editors, but with some hacks to fit me. The page lives in the "demo" folder, which is the original prisma demo but made into a game.
+Project is a thrown together game engine hacked on top of the demo in the @prisma/text-editors repo to quickly get a nice typescript editor. So the relevant code lives in the demo folder. Submitting bots to be added in the drop downs (and future tournaments if any) is backed via google sheets & forms.
 
-Preview at: https://game.damk.dev/
+Play it at: https://game.damk.dev/
