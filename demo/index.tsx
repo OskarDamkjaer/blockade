@@ -182,10 +182,14 @@ function App() {
             />
           </label>
         </div>
-        <h2 className="text-lg font-bold mt-1"> Other Bots </h2>
+        <h2 className="text-lg font-bold mt-1"> Enemy Bots </h2>
         <CodeEditor userBots={bots} player="RED" startingBot={basicBot} />
         <CodeEditor userBots={bots} player="YELLOW" startingBot={killerBot} />
         <CodeEditor userBots={bots} player="GREEN" startingBot={randomBot} />
+        <h2 className="text-lg font-bold mt-1">
+          disclaimer: check source before running player bots (no sandbox yet).
+        </h2>
+        Basic, Killer and Random bot are built in
       </span>
     </main>
   );
