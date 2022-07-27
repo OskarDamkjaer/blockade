@@ -36,6 +36,7 @@ export const SpotView = ({
         : "inherit",
       color: possibleMoveColor ? colors[possibleMoveColor] : "inherit",
     }}
+    title={spot.position.x + ":" + spot.position.y}
   >
     {possibleMoveColor ? "X" : pawn && pawn.number}
   </div>

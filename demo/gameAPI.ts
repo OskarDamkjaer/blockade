@@ -15,8 +15,14 @@ export { createGameState, doTurn } from "./game";
 export function nextTurnOptions(state: GameState): PossibleTurn {
   const { player, options } = getNextTurnOptions(state);
 
-  const myPawns = state.pawns[player];
-  const otherPawns = pawnsNotFromPlayer(state, player);
+  const myPawns = state.pawns[player].map(p => ({
+    ...p,
+    spot: access(state.field, p.position),
+  }));
+  const otherPawns = pawnsNotFromPlayer(state, player).map(p => ({
+    ...p,
+    spot: access(state.field, p.position),
+  }));
 
   const hasBarricade = spotsWithBarricade(state);
   const canHavebarricade = legalBarricadeSpots(state)

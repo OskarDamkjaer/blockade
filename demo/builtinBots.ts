@@ -6,6 +6,7 @@ type Pawn = {
   color: Color;
   number: number;
   position: Position | null;
+  spot: Spot
 };
 
 type Spot = {
@@ -63,15 +64,18 @@ If your code does not return within ~200ms (not yet implemented)
  or selects an illegal move one will be chosen at random. 
 */
 
-function doTurn(boardState: {
-  myPawns: Pawn[];
-  otherPawns: Pawn[];
-  allSpots: Spot[];
-  canHavebarricade: Spot[];
-  hasBarricade: Spot[];
-  moves: Turn[];
-}): Turn {
-  const {moves} = boardState
+
+function doTurn({
+  myPawns,
+  otherPawns,
+  allSpots,
+  canHavebarricade,
+  hasBarricade,
+  moves,
+}: GameState): Turn {
+  // Hover over a spot in the map to see it's position
+  const pos2spot = ({x, y}: Position): Spot => allSpots[y * 17 + x] 
+
   console.log(moves[0]) // visible in browser console
 
   const randomMove = moves[Math.floor(Math.random() * moves.length)]

@@ -13,8 +13,8 @@ type Move = "UP" | "DOWN" | "LEFT" | "RIGHT";
 export type Pawn = {
   color: Color;
   number: number;
-  position: Position | null; // if not on board is missing
-  name?: string; // for later
+  position: Position | null; // null if off board
+  name?: string; // for later / never
 };
 type Pawns = Record<Color, Pawn[]>;
 
@@ -35,8 +35,8 @@ export type TurnOptions = {
 export type PossibleTurn = {
   canHavebarricade: Spot[];
   hasBarricade: Spot[];
-  myPawns: Pawn[];
-  otherPawns: Pawn[];
+  myPawns: (Pawn & { spot: Spot })[];
+  otherPawns: (Pawn & { spot: Spot })[];
   allSpots: Spot[];
   moves: Turn[];
 };
@@ -169,12 +169,7 @@ export function connectField(f: Spot[][]): void {
 
   f.forEach(row =>
     row.forEach(spot => {
-      if (spot.contains !== "OUTSIDE") {
-        if (spot.connectedTo.length === 0) {
-          // I cannot fathom why this length check would ever be needed.
-          spot.connectedTo.push(...onePosAway(f, spot.position));
-        }
-      }
+      spot.connectedTo = onePosAway(f, spot.position);
     })
   );
 }
@@ -395,9 +390,6 @@ export function doTurn(state: GameState, chosenTurn: unknown): GameState {
     }
   }
 
-  if (!actualMove) {
-    debugger;
-  }
   const won = actualMove.newSpot.contains === "GOAL";
 
   const hitPawn = posContainsPawn(state, actualMove.newSpot.position);
