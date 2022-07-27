@@ -15,8 +15,6 @@
     "build": "yarn build:types && yarn build:lib",
     "build:types": "zx ./scripts/build-types.mjs",
     "build:lib": "zx ./scripts/build-lib.mjs",
-    "format": "prettier -w . --ignore-path=.gitignore",
-    "format:check": "prettier -c . --ignore-path=.gitignore",
     "prepublishOnly": "yarn build"
   },
   "files": [
@@ -60,7 +58,6 @@
     "fast-glob": "3.2.10",
     "localforage": "1.10.0",
     "lodash": "4.17.21",
-    "prettier": "2.5.1",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "relaxed-json": "1.0.3",
@@ -72,12 +69,5 @@
   "peerDependencies": {
     "react": "17.0.0",
     "react-dom": "17.0.0"
-  },
-  "prettier": {
-    "trailingComma": "es5",
-    "tabWidth": 2,
-    "semi": true,
-    "singleQuote": false,
-    "arrowParens": "avoid"
   }
 }

@@ -23,21 +23,24 @@ export const CodeEditor = ({
   main = false,
   userBots,
 }: Props) => {
-  const format = () =>
-    setCode(code =>
+  const format = () => {
+    setCode((code) =>
       prettier.format(code, {
         parser: "typescript",
         plugins: [prettierTs],
       })
     );
+  };
   const [code, setCode] = useState(
     main ? playerStarter.code : startingBot.code
   );
-  const [expanded, toggleExpanded] = useReducer(e => !e, defaultExpand);
-  const [openSubmit, toggleSubmit] = useReducer(e => !e, false);
+  const [expanded, toggleExpanded] = useReducer((e) => !e, defaultExpand);
+  const [openSubmit, toggleSubmit] = useReducer((e) => !e, false);
   const [selected, setSel] = useState(startingBot.name);
 
-  const botNames = pickableBots.map(b => b.name).concat(Object.keys(userBots));
+  const botNames = pickableBots
+    .map((b) => b.name)
+    .concat(Object.keys(userBots));
 
   const loadCode = () => {
     loadPlayerCode(
@@ -105,7 +108,7 @@ window.onmessage = (({data}) => {
 
   useEffect(loadCode, [code]);
 
-  const handleSubmit: React.ChangeEventHandler<HTMLSelectElement> = e => {
+  const handleSubmit: React.ChangeEventHandler<HTMLSelectElement> = (e) => {
     const chosen = e.target.value;
     setSel(chosen);
     const isUserBot = chosen.includes("-");
@@ -113,7 +116,7 @@ window.onmessage = (({data}) => {
     setCode(
       isUserBot
         ? userBots[chosen].Code
-        : pickableBots.find(b => b.name === chosen).code
+        : pickableBots.find((b) => b.name === chosen).code
     );
   };
 
@@ -145,12 +148,12 @@ window.onmessage = (({data}) => {
         {main ? (
           <input
             value={selected}
-            onChange={s => setSel(s.target.value)}
+            onChange={(s) => setSel(s.target.value)}
             className="w-48 bg-gray-200"
           />
         ) : (
           <select value={selected} onChange={handleSubmit}>
-            {botNames.map(name => (
+            {botNames.map((name) => (
               <option key={name} value={name}>
                 {name}
               </option>
@@ -165,6 +168,7 @@ window.onmessage = (({data}) => {
             {openSubmit ? "hide form" : "upload bot"}
           </button>
         )}
+        <button onClick={format}>format</button>
         <button onClick={toggleExpanded}>
           {expanded ? "hide code " : "show code "}
         </button>
