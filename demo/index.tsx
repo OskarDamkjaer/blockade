@@ -22,6 +22,8 @@ export type SpreadsheetEntry = {
 export const nameRow = (e: SpreadsheetEntry) =>
   `${e["Author name"]}s - ${e["Bot name"]}`;
 
+let lastStartTime = 0;
+let activeGameNbr = 0;
 function App() {
   const [bots, setBots] = useState<Record<string, SpreadsheetEntry>>({});
   const [debuggerEnabled, toggle] = useReducer(a => !a, true);
@@ -50,36 +52,45 @@ function App() {
 
   window.onmessage = async ({ data }) => {
     //console.log("winmess", data);
-    let turn: any = null;
-    try {
-      turn = JSON.parse(data);
-    } catch {}
+    const { gameNbr, move } = JSON.parse(data);
 
     if (parseInt(ref.current.value) !== 3000) {
       await new Promise(res =>
         setTimeout(res, 3000 - parseInt(ref.current.value))
       );
     }
-    const newState = doTurn(state, turn);
+
+    if (gameNbr !== activeGameNbr) {
+      return;
+    }
+    const newState = doTurn(state, move);
     setState(newState);
 
     if (newState.winner) {
       console.log(newState.winner + " won");
     } else {
       const nextTurn = nextTurnOptions(newState);
-      requestTurn(currentPlayer(newState), nextTurn);
+      requestTurn(currentPlayer(newState), nextTurn, gameNbr);
     }
   };
 
   const startGame = () => {
-    if (state.turn === 0 || state.winner) {
-      const restartedState = createGameState();
-      setState(restartedState);
-      requestTurn(
-        currentPlayer(restartedState),
-        nextTurnOptions(restartedState)
-      );
+    const currTime = new Date().valueOf();
+    console.log(currTime, lastStartTime);
+    if (currTime - lastStartTime < 500) {
+      return;
+    } else {
+      lastStartTime = currTime;
     }
+
+    activeGameNbr += 1;
+    const restartedState = createGameState();
+    setState(restartedState);
+    requestTurn(
+      currentPlayer(restartedState),
+      nextTurnOptions(restartedState),
+      activeGameNbr
+    );
   };
 
   const nextTurn = nextTurnOptions(state);
@@ -144,18 +155,12 @@ function App() {
       </div>
       <span className="grow">
         <span className="flex gap-1 mt-1">
-          {/* multiple games running leads to concurr issues */}
-          {state.turn === 0 || state.winner ? (
-            <button
-              className="bg-lime-600 hover:bg-lime-800 text-white px-1 rounded"
-              onClick={startGame}
-            >
-              {" "}
-              {state.winner && "re"}start game
-            </button>
-          ) : (
-            "running..."
-          )}
+          <button
+            className="bg-lime-600 hover:bg-lime-800 text-white px-1 rounded"
+            onClick={startGame}
+          >
+            {state.winner && "re"}start game
+          </button>
 
           <span className=""> turn: {state.turn}</span>
           {state.winner && (

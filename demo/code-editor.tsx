@@ -30,16 +30,69 @@ export const CodeEditor = ({
 
   const botNames = pickableBots.map(b => b.name).concat(Object.keys(userBots));
 
-  const loadCode = () =>
+  const loadCode = () => {
     loadPlayerCode(
       player,
       `
-${transpile(code)}
-window.onmessage=(({data}) => {
-  const move = doTurn(JSON.parse(data))
-  window.top.postMessage(JSON.stringify(move))
+function doTurn12345(data){
+  ${transpile(code)}
+  return doTurn(data);
+}
+window.onmessage = (({data}) => {
+  function thread(fn, ...args) {
+    if (!window.Worker)
+      throw Promise.reject(new ReferenceError("WebWorkers aren't available."));
+
+    const fnWorker =
+      "self.onmessage = function(message) { self.postMessage( (" +
+      fn.toString() +
+      ").apply(null, message.data)); }";
+
+    return new Promise((resolve, reject) => {
+      try {
+        const blob = new Blob([fnWorker], { type: "text/javascript" });
+        const blobUrl = window.URL.createObjectURL(blob);
+        const worker = new Worker(blobUrl);
+        window.URL.revokeObjectURL(blobUrl);
+
+        worker.onmessage = result => {
+          resolve(result.data);
+          worker.terminate();
+        };
+
+        worker.onerror = error => {
+          reject(error);
+          worker.terminate();
+        };
+
+        setTimeout(() => {
+          reject("TIMEOUT")
+          worker.terminate();
+        }, 900)
+
+        worker.postMessage(args);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  const {gameNbr, turn} = JSON.parse(data)
+  thread(doTurn12345, turn)
+    .then(move => {
+      window.top.postMessage(JSON.stringify({gameNbr, move}))
+    })
+    .catch((e) => {
+      if(e === "TIMEOUT"){
+         console.log("bot timed out")
+      } else {
+        console.log("bot crashed picking random move")
+      }
+      window.top.postMessage(JSON.stringify({gameNbr, move: null}))
+    })
 })`
     );
+  };
 
   useEffect(loadCode, [code]);
 

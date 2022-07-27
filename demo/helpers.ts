@@ -24,11 +24,15 @@ export function loadPlayerCode(player: Color, code: string) {
   }
 }
 
-export function requestTurn(player: Color, turn: PossibleTurn) {
+export function requestTurn(
+  player: Color,
+  turn: PossibleTurn,
+  gameNbr: number
+) {
   const doc = document.getElementById(playerConstants[player].iframeId);
   if (doc instanceof HTMLIFrameElement) {
     //console.log(JSON.stringify(turn));
-    doc.contentWindow?.postMessage(JSON.stringify(turn), "*");
+    doc.contentWindow?.postMessage(JSON.stringify({ turn, gameNbr }), "*");
   } else {
     console.log("no iframe");
     throw new Error(`No iframe found for ${player}`);

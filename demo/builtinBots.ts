@@ -25,14 +25,14 @@ type Turn = {
   newBarricadePosition?: Position;
  };
 
- type GameState = {
-   myPawns: Pawn[];
-   otherPawns: Pawn[];
-   allSpots: Spot[];
-   canHavebarricade: Spot[];
-   hasBarricade: Spot[];
-   moves: Turn[]
- }
+type GameState = {
+  myPawns: Pawn[];
+  otherPawns: Pawn[];
+  allSpots: Spot[];
+  canHavebarricade: Spot[];
+  hasBarricade: Spot[];
+  moves: Turn[]
+}
 `;
 export const firstIsBestBot = {
   name: "FirstIsBestBot",
