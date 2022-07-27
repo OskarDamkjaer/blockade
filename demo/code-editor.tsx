@@ -24,12 +24,16 @@ export const CodeEditor = ({
   userBots,
 }: Props) => {
   const format = () => {
-    setCode((code) =>
-      prettier.format(code, {
-        parser: "typescript",
-        plugins: [prettierTs],
-      })
-    );
+    setCode((code) => {
+      try {
+        return prettier.format(code, {
+          parser: "typescript",
+          plugins: [prettierTs],
+        });
+      } catch {
+        return code;
+      }
+    });
   };
   const [code, setCode] = useState(
     main ? playerStarter.code : startingBot.code
