@@ -24,7 +24,7 @@ export const CodeEditor = ({
   userBots,
 }: Props) => {
   const format = () =>
-    setCode(
+    setCode(code =>
       prettier.format(code, {
         parser: "typescript",
         plugins: [prettierTs],
