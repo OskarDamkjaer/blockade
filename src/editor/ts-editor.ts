@@ -18,6 +18,7 @@ type TSEditorParams = {
   theme?: ThemeName;
   onChange?: (value: string) => void;
   onLeaveQuery?: () => void;
+  format: () => void;
 };
 
 export class TSEditor extends BaseEditor {
@@ -32,17 +33,17 @@ export class TSEditor extends BaseEditor {
 
       extensions: [
         EditorView.editable.of(!params.readonly),
-
         appearance({
           domElement: params.domElement,
           theme: params.theme,
         }),
-
         behaviour({
           onChange: params.onChange,
         }),
-        defaultKeymap(),
-
+        defaultKeymap(() => {
+          params.format();
+          return true;
+        }),
         typescript(),
       ],
     });

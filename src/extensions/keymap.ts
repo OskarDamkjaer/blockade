@@ -7,7 +7,7 @@ import { undo } from "@codemirror/history";
 import { Extension } from "@codemirror/state";
 import { keymap as keymapFacet } from "@codemirror/view";
 
-export const keymap = (): Extension => [
+export const keymap = (format: () => boolean): Extension => [
   keymapFacet.of([
     indentWithTab,
     ...defaultKeymap,
@@ -19,6 +19,11 @@ export const keymap = (): Extension => [
       key: "Ctrl-z",
       mac: "Mod-z",
       run: undo,
+    },
+    {
+      key: "Ctrl-s",
+      mac: "Mod-s",
+      run: format,
     },
   ]),
 ];

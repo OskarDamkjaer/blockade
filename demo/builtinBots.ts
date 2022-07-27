@@ -60,8 +60,8 @@ export const playerStarter = {
 Below you'll find a typescript function "doTurn" selecting a random move.  
 It's up to you to improve it. ctrl + space for autocomplete.
 
-If your code does not return within ~200ms (not yet implemented)
- or selects an illegal move one will be chosen at random. 
+If your code does not return within ~200ms or selects an 
+illegal move one will be chosen at random. 
 */
 
 
@@ -73,13 +73,17 @@ function doTurn({
   hasBarricade,
   moves,
 }: GameState): Turn {
-  // Hover over a spot in the map to see it's position
-  const pos2spot = ({x, y}: Position): Spot => allSpots[y * 17 + x] 
 
   console.log(moves[0]) // visible in browser console
 
   const randomMove = moves[Math.floor(Math.random() * moves.length)]
   return randomMove
+
+  // tips & util fns:
+  // Hover over a spot on the board/image to see it's position
+  // (cmd/ctrl)+s to format your code 
+  const pos2spot = ({ x, y }: Position): Spot => allSpots[y * 17 + x];
+  const comparePositions = (p1: Position | null, p2: Position | null) => p1?.x === p2?.x && p1?.y === p2?.y;
 }
 ${types}
 `,

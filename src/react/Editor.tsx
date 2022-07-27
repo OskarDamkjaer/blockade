@@ -20,6 +20,7 @@ export type EditorProps = {
   style?: CSSProperties;
   /** Additional classes for the editor container */
   className?: string;
+  format: () => void;
   /** Callback called when the value of the editor changes (debounced) */
   onChange?: (value: string) => void;
 } & (
@@ -59,6 +60,7 @@ export class Editor extends React.Component<EditorProps> {
           theme: this.props.theme,
           types: this.props.types,
           onChange: this.props.onChange,
+          format: this.props.format,
         });
         break;
 

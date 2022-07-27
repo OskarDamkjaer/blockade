@@ -1,3 +1,5 @@
+import prettierTs from "prettier/parser-typescript";
+import prettier from "prettier/standalone";
 import React, { useEffect, useReducer, useState } from "react";
 import { transpile } from "typescript";
 import { SpreadsheetEntry } from ".";
@@ -21,6 +23,13 @@ export const CodeEditor = ({
   main = false,
   userBots,
 }: Props) => {
+  const format = () =>
+    setCode(
+      prettier.format(code, {
+        parser: "typescript",
+        plugins: [prettierTs],
+      })
+    );
   const [code, setCode] = useState(
     main ? playerStarter.code : startingBot.code
   );
@@ -163,7 +172,7 @@ window.onmessage = (({data}) => {
       {expanded && (
         <div className="min-h-[600px] h-[600px]">
           <span id={playerConstants[player].editorId} />
-          <Editor lang="ts" value={code} onChange={setCode} />
+          <Editor lang="ts" value={code} onChange={setCode} format={format} />
         </div>
       )}
     </div>

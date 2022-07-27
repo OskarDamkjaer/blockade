@@ -204,7 +204,8 @@ function App() {
         <CodeEditor userBots={bots} player="YELLOW" startingBot={killerBot} />
         <CodeEditor userBots={bots} player="GREEN" startingBot={randomBot} />
         <h2 className="text-lg font-bold mt-1">
-          disclaimer: check source before running player bots (no sandbox yet).
+          disclaimer: check source before running player bots (sandbox isn't
+          perfect).
         </h2>
         Basic, Killer, FirstIsBest and Random bot are built in
         <a
