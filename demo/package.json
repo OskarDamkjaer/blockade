@@ -4,9 +4,9 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "build": "./build.sh",
+    "build": "vite build",
     "dev": "vite",
-    "deploy": "NODE_OPTIONS='--max-old-space-size=16384' yarn vite build && scp -r dist/  oskar@159.65.117.196:/home/oskar/malefiz-build",
+    "deploy": "yarn vite build && scp -r dist/  oskar@159.65.117.196:/home/oskar/malefiz-build",
     "preview": "yarn build && serve public"
   },
   "dependencies": {

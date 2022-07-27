@@ -1,8 +1,8 @@
 import prettierTs from "prettier/parser-typescript";
 import prettier from "prettier/standalone";
 import React, { useEffect, useReducer, useState } from "react";
-import { transpile } from "typescript";
 import { SpreadsheetEntry } from ".";
+import { transpile } from "../src/editor/ts-editor";
 import { Editor } from "../src/lib";
 import { pickableBots, playerStarter, randomBot } from "./builtinBots";
 import type { Color } from "./game";

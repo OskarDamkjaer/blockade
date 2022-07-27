@@ -64,7 +64,6 @@ If your code does not return within ~200ms or selects an
 illegal move one will be chosen at random. 
 */
 
-
 function doTurn({
   myPawns,
   otherPawns,
@@ -73,17 +72,17 @@ function doTurn({
   hasBarricade,
   moves,
 }: GameState): Turn {
+  console.log(moves[0]); // visible in browser console
 
-  console.log(moves[0]) // visible in browser console
-
-  const randomMove = moves[Math.floor(Math.random() * moves.length)]
-  return randomMove
+  const randomMove = moves[Math.floor(Math.random() * moves.length)];
+  return randomMove;
 
   // tips & util fns:
-  // Hover over a spot on the board/image to see it's position
-  // (cmd/ctrl)+s to format your code 
+  // hover over a spot on the board/image to see it's position
+  // (cmd/ctrl)+s to format your code
   const pos2spot = ({ x, y }: Position): Spot => allSpots[y * 17 + x];
-  const comparePositions = (p1: Position | null, p2: Position | null) => p1?.x === p2?.x && p1?.y === p2?.y;
+  const comparePositions = (p1: Position | null, p2: Position | null) =>
+    p1?.x === p2?.x && p1?.y === p2?.y;
 }
 ${types}
 `,
