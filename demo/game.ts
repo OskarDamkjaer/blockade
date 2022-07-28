@@ -37,6 +37,7 @@ export type PossibleTurn = {
   hasBarricade: Spot[];
   myPawns: (Pawn & { spot: Spot })[];
   otherPawns: (Pawn & { spot: Spot })[];
+  startingPositions: Record<Color, Spot>;
   allSpots: Spot[];
   moves: Turn[];
 };
@@ -148,15 +149,15 @@ export function connectField(f: Spot[][]): void {
     const currSpot = access(f, currPos);
 
     const neighbourPos = onePosAway(f, currPos).filter(
-      p => !visited.includes(pointToString(p))
+      (p) => !visited.includes(pointToString(p))
     );
 
     // korsningar besöks två gånger
     if (!visited.includes(pointToString(currPos))) {
       neighbourPos
-        .map(n => access(f, n))
+        .map((n) => access(f, n))
         .filter((s): s is Spot => s !== undefined)
-        .forEach(spot => {
+        .forEach((spot) => {
           if (currSpot) {
             spot.goalDistance = (currSpot.goalDistance || 0) + 1;
           }
@@ -167,8 +168,8 @@ export function connectField(f: Spot[][]): void {
     }
   }
 
-  f.forEach(row =>
-    row.forEach(spot => {
+  f.forEach((row) =>
+    row.forEach((spot) => {
       spot.connectedTo = onePosAway(f, spot.position);
     })
   );
@@ -213,15 +214,15 @@ export function onePosAway(f: Spot[][], p: Position): Position[] {
   };
 
   return moves
-    .map(move => {
+    .map((move) => {
       const dir = directions[move];
       return { x: p.x + dir.x, y: p.y + dir.y };
     })
-    .filter(p => access(f, p).contains !== "OUTSIDE");
+    .filter((p) => access(f, p).contains !== "OUTSIDE");
 }
 
 export function oneStepAway(f: Spot[][], p: Position): Spot[] {
-  return onePosAway(f, p).map(p1 => access(f, p1));
+  return onePosAway(f, p).map((p1) => access(f, p1));
 }
 
 export function flatten<T>(acc: T[], curr: T[]): T[] {
@@ -249,27 +250,28 @@ export function innerFindPaths(
   const all = curr ? onePosAway(f, curr) : [firstStepForColor(f, currColor)];
 
   const notVisited = all.filter(
-    p => !visited.find(v => v.x === p.x && v.y === p.y)
+    (p) => !visited.find((v) => v.x === p.x && v.y === p.y)
   );
-  const cantPass = notVisited.filter(p => {
+  const cantPass = notVisited.filter((p) => {
     const isBarricade = access(f, p).contains === "BARRICADE";
     const lastStep = stepsLeft === 1;
     return !isBarricade || lastStep;
   });
-  const cantStopOnSelf = cantPass.filter(p => {
+  const cantStopOnSelf = cantPass.filter((p) => {
     const isSelf = posContainsPawn(state, p)?.color === currColor;
     const lastStep = stepsLeft === 1;
     return !(isSelf && lastStep);
   });
 
   return cantStopOnSelf
-    .map(p => innerFindPaths(state, p, visited, stepsLeft - 1, currColor))
+    .map((p) => innerFindPaths(state, p, visited, stepsLeft - 1, currColor))
     .reduce(flatten, []);
 }
 
 export function firstStepForColor(f: Spot[][], color: Color): Position {
-  return f.reduce(flatten, []).find(spot => spot.startingPointColor === color)!
-    .position;
+  return f
+    .reduce(flatten, [])
+    .find((spot) => spot.startingPointColor === color)!.position;
 }
 
 function roll() {
@@ -288,7 +290,7 @@ export function prepareTurn(state: GameState): MoveOptions {
   const player = currentPlayer(state);
 
   const moves = pawns[player]
-    .map(pawn => ({
+    .map((pawn) => ({
       pawnNumber: pawn.number,
       moves: innerFindPaths(state, pawn.position, [], diceRoll, player),
     }))
@@ -311,8 +313,8 @@ export function getNextTurnOptions(state: GameState): TurnOptions {
   const player = currentPlayer(state);
 
   const options = pawns[player]
-    .map(pawn =>
-      innerFindPaths(state, pawn.position, [], diceRoll, player).map(pos => ({
+    .map((pawn) =>
+      innerFindPaths(state, pawn.position, [], diceRoll, player).map((pos) => ({
         pawn,
         newSpot: access(state.field, pos),
         oldSpot: access(state.field, pawn.position),
@@ -327,7 +329,7 @@ export function posContainsPawn(state: GameState, pos: Position): Pawn | null {
   const allPawns = Object.values(state.pawns).reduce(flatten, []);
 
   return (
-    allPawns.find(pawn =>
+    allPawns.find((pawn) =>
       isSamePosition(pawn.position ?? { x: -999, y: -999 }, pos)
     ) || null
   );
@@ -428,23 +430,23 @@ export function doTurn(state: GameState, chosenTurn: unknown): GameState {
 export function legalBarricadeSpots(state: GameState): Position[] {
   return state.field
     .reduce(flatten, [])
-    .filter(spot => spot.contains === "NORMAL")
-    .filter(spot => !spot.unBarricadeable && !spot.startingPointColor)
-    .filter(spot => !posContainsPawn(state, spot.position))
-    .map(spot => spot.position);
+    .filter((spot) => spot.contains === "NORMAL")
+    .filter((spot) => !spot.unBarricadeable && !spot.startingPointColor)
+    .filter((spot) => !posContainsPawn(state, spot.position))
+    .map((spot) => spot.position);
 }
 
 export function spotsWithBarricade(state: GameState): Spot[] {
   return state.field
     .reduce(flatten, [])
-    .filter(spot => spot.contains === "BARRICADE");
+    .filter((spot) => spot.contains === "BARRICADE");
 }
 
 export function nonEmptySpots(state: GameState): Spot[] {
   return state.field
     .reduce(flatten, [])
     .filter(
-      spot =>
+      (spot) =>
         spot.contains === "BARRICADE" ||
         spot.contains === "GOAL" ||
         posContainsPawn(state, spot.position)
@@ -462,7 +464,7 @@ function moveBarricade(
 
   const legalBarrSpots = legalBarricadeSpots(state);
   const choseLegalSpot =
-    to && legalBarrSpots.some(spot => isSamePosition(spot, to));
+    to && legalBarrSpots.some((spot) => isSamePosition(spot, to));
 
   // if illegal spot randomize
   const newBarPosition: Position =
@@ -483,7 +485,7 @@ function updateFieldSpots(
     newSpot: Spot;
   }[]
 ): Spot[][] {
-  const copy = f.map(row => [...row]);
+  const copy = f.map((row) => [...row]);
 
   updates.forEach(({ pos, newSpot }) => {
     const { x, y } = pos;
@@ -521,7 +523,7 @@ export function createGameState(seed?: number): GameState {
   const colors: Color[] = ["RED", "GREEN", "YELLOW", "BLUE"];
 
   const players = colors
-    .map(value => ({ value, sort: Math.random() }))
+    .map((value) => ({ value, sort: Math.random() }))
     .sort((a, b) => a.sort - b.sort)
     .map(({ value }) => value);
 

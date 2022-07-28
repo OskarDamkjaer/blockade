@@ -26,12 +26,13 @@ type Turn = {
  };
 
 type GameState = {
-  myPawns: Pawn[];
+  myPawns: Pawn[]; // pawns currently on board
   otherPawns: Pawn[];
   allSpots: Spot[];
   canHavebarricade: Spot[];
   hasBarricade: Spot[];
-  moves: Turn[]
+  moves: Turn[];
+  startingPositions: Record<Color, Spot>; // where your pawn will land if you move 1 from base
 }
 `;
 export const firstIsBestBot = {
@@ -71,6 +72,7 @@ function doTurn({
   canHavebarricade,
   hasBarricade,
   moves,
+  startingPositions,
 }: GameState): Turn {
   console.log(moves[0]); // visible in browser console
 
