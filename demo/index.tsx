@@ -26,14 +26,14 @@ let lastStartTime = 0;
 let activeGameNbr = 0;
 function App() {
   const [bots, setBots] = useState<Record<string, SpreadsheetEntry>>({});
-  const [debuggerEnabled, toggle] = useReducer(a => !a, true);
+  const [debuggerEnabled, toggle] = useReducer((a) => !a, true);
   const ref = useRef<HTMLInputElement>();
   useEffect(() => {
     fetch(
       "https://docs.google.com/spreadsheets/d/e/2PACX-1vSqUDr_aXWAzwkjCB1N2lH5xanLTGpAhSMt3fYHdkLUP2On1Tkrkb8HFCSqrGCjXZYocNne_qOZwdbU/pub?gid=359820102&single=true&output=csv"
     )
-      .then(res => res.text())
-      .then(data => {
+      .then((res) => res.text())
+      .then((data) => {
         const parsed = parse(data, { header: true, dynamicTyping: true })
           .data as SpreadsheetEntry[];
 
@@ -55,9 +55,17 @@ function App() {
     const { gameNbr, move } = JSON.parse(data);
 
     if (parseInt(ref.current.value) !== 3000) {
-      await new Promise(res =>
+      await new Promise((res) =>
         setTimeout(res, 3000 - parseInt(ref.current.value))
       );
+      // slider to zero is pause
+      const pause = async () => {
+        if (parseInt(ref.current.value) === 0) {
+          await new Promise((res) => setTimeout(res, 1000));
+          await pause();
+        }
+      };
+      await pause();
     }
 
     if (gameNbr !== activeGameNbr) {
@@ -76,7 +84,6 @@ function App() {
 
   const startGame = () => {
     const currTime = new Date().valueOf();
-    console.log(currTime, lastStartTime);
     if (currTime - lastStartTime < 500) {
       return;
     } else {
@@ -101,9 +108,9 @@ function App() {
         {state.field
           .slice()
           .reverse()
-          .map(row => (
+          .map((row) => (
             <div className="absolute top-0" key={row[0].position.y}>
-              {row.map(spot => (
+              {row.map((spot) => (
                 <span
                   className="absolute"
                   key={
@@ -122,7 +129,7 @@ function App() {
                     possibleMoveColor={
                       debuggerEnabled &&
                       nextTurn.moves.find(
-                        m =>
+                        (m) =>
                           m.newSpot.position.x === spot.position.x &&
                           m.newSpot.position.y === spot.position.y
                       )
