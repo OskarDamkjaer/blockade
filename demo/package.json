@@ -10,7 +10,8 @@
     "preview": "yarn build && serve public"
   },
   "dependencies": {
-    "prettier": "2.0.0"
+    "prettier": "2.0.0",
+    "ts-trueskill": "^4.0.0"
   },
   "devDependencies": {
     "@types/prettier": "^2.6.4",

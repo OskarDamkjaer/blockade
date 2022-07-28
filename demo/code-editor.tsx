@@ -2,11 +2,11 @@ import prettierTs from "prettier/parser-typescript";
 import prettier from "prettier/standalone";
 import React, { useEffect, useReducer, useState } from "react";
 import { SpreadsheetEntry } from ".";
-import { transpile } from "../src/editor/ts-editor";
 import { Editor } from "../src/lib";
 import { pickableBots, playerStarter, randomBot } from "./builtinBots";
 import type { Color } from "./game";
-import { loadPlayerCode, playerConstants } from "./helpers";
+import { loadCode, playerConstants } from "./helpers";
+
 type Bot = { name: string; author: string; code: string };
 type Props = {
   player: Color;
@@ -46,71 +46,7 @@ export const CodeEditor = ({
     .map((b) => b.name)
     .concat(Object.keys(userBots));
 
-  const loadCode = () => {
-    loadPlayerCode(
-      player,
-      `
-function doTurn12345(data){
-  ${transpile(code)}
-  return doTurn(data);
-}
-window.onmessage = (({data}) => {
-  function thread(fn, ...args) {
-    if (!window.Worker)
-      throw Promise.reject(new ReferenceError("WebWorkers aren't available."));
-
-    const fnWorker =
-      "self.onmessage = function(message) { self.postMessage( (" +
-      fn.toString() +
-      ").apply(null, message.data)); }";
-
-    return new Promise((resolve, reject) => {
-      try {
-        const blob = new Blob([fnWorker], { type: "text/javascript" });
-        const blobUrl = window.URL.createObjectURL(blob);
-        const worker = new Worker(blobUrl);
-        window.URL.revokeObjectURL(blobUrl);
-
-        worker.onmessage = result => {
-          resolve(result.data);
-          worker.terminate();
-        };
-
-        worker.onerror = error => {
-          reject(error);
-          worker.terminate();
-        };
-
-        setTimeout(() => {
-          reject("TIMEOUT")
-          worker.terminate();
-        }, 900)
-
-        worker.postMessage(args);
-      } catch (error) {
-        reject(error);
-      }
-    });
-  }
-
-  const {gameNbr, turn} = JSON.parse(data)
-  thread(doTurn12345, turn)
-    .then(move => {
-      window.top.postMessage(JSON.stringify({gameNbr, move}))
-    })
-    .catch((e) => {
-      if(e === "TIMEOUT"){
-         console.log("bot timed out")
-      } else {
-        console.log("bot crashed picking random move")
-      }
-      window.top.postMessage(JSON.stringify({gameNbr, move: null}))
-    })
-})`
-    );
-  };
-
-  useEffect(loadCode, [code]);
+  useEffect(() => loadCode(player, code), [code]);
 
   const handleSubmit: React.ChangeEventHandler<HTMLSelectElement> = (e) => {
     const chosen = e.target.value;
@@ -159,7 +95,8 @@ window.onmessage = (({data}) => {
           <select value={selected} onChange={handleSubmit}>
             {botNames.map((name) => (
               <option key={name} value={name}>
-                {name}
+                {name}{" "}
+                {userBots[name]?.elo ? " - (" + userBots[name]?.elo + ")" : ""}
               </option>
             ))}
           </select>

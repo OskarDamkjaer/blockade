@@ -1,11 +1,12 @@
 import { parse } from "papaparse";
 import React, { useEffect, useReducer, useRef, useState } from "react";
 import ReactDOM from "react-dom";
+import { rate, Rating } from "ts-trueskill";
 import { basicBot, killerBot, playerStarter, randomBot } from "./builtinBots";
 import { CodeEditor } from "./code-editor";
-import { currentPlayer, posContainsPawn } from "./game";
+import { access, Color, currentPlayer, posContainsPawn } from "./game";
 import { createGameState, doTurn, nextTurnOptions } from "./gameAPI";
-import { requestTurn } from "./helpers";
+import { loadCode, playerConstants, requestTurn } from "./helpers";
 import "./input.css";
 // @ts-ignore
 import mal from "./plan.jpg";
@@ -17,6 +18,7 @@ export type SpreadsheetEntry = {
   "Bot name": string;
   Code: string;
   Vetted: boolean | null;
+  elo: number | null;
 };
 
 export const nameRow = (e: SpreadsheetEntry) =>
@@ -24,10 +26,14 @@ export const nameRow = (e: SpreadsheetEntry) =>
 
 let lastStartTime = 0;
 let activeGameNbr = 0;
+
 function App() {
   const [bots, setBots] = useState<Record<string, SpreadsheetEntry>>({});
   const [debuggerEnabled, toggle] = useReducer((a) => !a, true);
+  const isElo = !!new URL(window.location.href).searchParams.get("elo");
   const ref = useRef<HTMLInputElement>();
+  const [state, setState] = useState(createGameState());
+
   useEffect(() => {
     fetch(
       "https://docs.google.com/spreadsheets/d/e/2PACX-1vSqUDr_aXWAzwkjCB1N2lH5xanLTGpAhSMt3fYHdkLUP2On1Tkrkb8HFCSqrGCjXZYocNne_qOZwdbU/pub?gid=359820102&single=true&output=csv"
@@ -48,39 +54,41 @@ function App() {
         );
       });
   }, []);
-  const [state, setState] = useState(createGameState());
 
-  window.onmessage = async ({ data }) => {
-    //console.log("winmess", data);
-    const { gameNbr, move } = JSON.parse(data);
+  if (!isElo) {
+    // this is re-set on every render, yikes
+    window.onmessage = async ({ data }) => {
+      //console.log("winmess", data);
+      const { gameNbr, move } = JSON.parse(data);
 
-    if (parseInt(ref.current.value) !== 3000) {
-      await new Promise((res) =>
-        setTimeout(res, 3000 - parseInt(ref.current.value))
-      );
-      // slider to zero is pause
-      const pause = async () => {
-        if (parseInt(ref.current.value) === 0) {
-          await new Promise((res) => setTimeout(res, 1000));
-          await pause();
-        }
-      };
-      await pause();
-    }
+      if (parseInt(ref.current.value) !== 3000 || isElo) {
+        await new Promise((res) =>
+          setTimeout(res, 3000 - parseInt(ref.current.value))
+        );
+        // slider to zero is pause
+        const pause = async () => {
+          if (parseInt(ref.current.value) === 0) {
+            await new Promise((res) => setTimeout(res, 1000));
+            await pause();
+          }
+        };
+        await pause();
+      }
 
-    if (gameNbr !== activeGameNbr) {
-      return;
-    }
-    const newState = doTurn(state, move);
-    setState(newState);
+      if (gameNbr !== activeGameNbr) {
+        return;
+      }
+      const newState = doTurn(state, move);
+      setState(newState);
 
-    if (newState.winner) {
-      console.log(newState.winner + " won");
-    } else {
-      const nextTurn = nextTurnOptions(newState);
-      requestTurn(currentPlayer(newState), nextTurn, gameNbr);
-    }
-  };
+      if (newState.winner) {
+        console.log(newState.winner + " won");
+      } else {
+        const nextTurn = nextTurnOptions(newState);
+        requestTurn(currentPlayer(newState), nextTurn, gameNbr);
+      }
+    };
+  }
 
   const startGame = () => {
     const currTime = new Date().valueOf();
@@ -100,8 +108,140 @@ function App() {
     );
   };
 
+  const colors: Color[] = ["BLUE", "RED", "GREEN", "YELLOW"];
+  const startForBots = async (allBots: { name: string; code: string }[]) => {
+    const simulate = (bots: { name: string; code: string }[]) => {
+      colors.forEach((c, i) => {
+        loadCode(c, bots[i].code);
+      });
+      return new Promise<string[]>((res) => {
+        let gameState = createGameState();
+        window.onmessage = async ({ data }) => {
+          const { move } = JSON.parse(data);
+
+          gameState = doTurn(gameState, move);
+
+          if (gameState.winner) {
+            const order = Object.values(gameState.pawns)
+              .map((pList) => {
+                pList.sort(
+                  (p1, p2) =>
+                    access(gameState.field, p1.position).goalDistance -
+                    access(gameState.field, p2.position).goalDistance
+                );
+                return pList[0];
+              })
+              .sort(
+                (p1, p2) =>
+                  access(gameState.field, p1.position).goalDistance -
+                  access(gameState.field, p2.position).goalDistance
+              )
+              .map((c) => bots[colors.indexOf(c.color)].name);
+            res(order);
+          } else {
+            const nextTurn = nextTurnOptions(gameState);
+            requestTurn(currentPlayer(gameState), nextTurn, 0);
+          }
+        };
+        requestTurn(
+          currentPlayer(gameState),
+          nextTurnOptions(gameState),
+          activeGameNbr
+        );
+      });
+    };
+
+    const scoreboard = allBots.reduce((acc, bot) => {
+      acc[bot.name] = {
+        name: bot.name,
+        code: bot.code,
+        rating: new Rating(),
+        played: 0,
+        wins: 0,
+      };
+      return acc;
+    }, {} as Record<string, { rating: Rating; played: number; name: string; code: string; wins: number }>);
+
+    async function rankedGame(chosen: { name: string; code: string }[]) {
+      const order = await simulate(chosen);
+      scoreboard[order[0]].wins++;
+
+      const ratings = rate(order.map((b) => [scoreboard[b].rating]));
+      ratings.forEach(([r], i) => {
+        scoreboard[order[i]].rating = r;
+        scoreboard[order[i]].played += 1;
+      });
+    }
+
+    const COUNT = 20;
+    while (Object.values(scoreboard).some((v) => v.played < COUNT)) {
+      const low = Object.values(scoreboard)
+        .filter((s) => s.played < COUNT)
+        .sort(() => 0.5 - Math.random());
+
+      const med = Object.values(scoreboard)
+        .filter((s) => s.played === COUNT)
+        .sort(() => 0.5 - Math.random());
+
+      const high = Object.values(scoreboard)
+        .filter((s) => s.played > COUNT)
+        .sort(() => 0.5 - Math.random());
+
+      const play = [...low, ...med, ...high].slice(0, 4);
+      console.log(play.map((p) => p.name).join(" - "));
+      await rankedGame(play);
+    }
+
+    console.log(
+      Object.entries(scoreboard)
+        .sort(([k1, v1], [k2, v2]) => v2.rating.mu - v1.rating.mu)
+        .map(
+          ([n, e]) =>
+            "bot: " +
+            n +
+            ", elo: " +
+            Math.floor(e.rating.mu * 50) +
+            " ,played: " +
+            e.played +
+            " ,wins: " +
+            e.wins
+        )
+        .join("\n")
+    );
+  };
+
   const nextTurn = nextTurnOptions(state);
-  return (
+
+  return isElo ? (
+    <div>
+      <button
+        onClick={() => {
+          startForBots(
+            Object.entries(bots)
+              .map(([k, v]) => ({ name: k, code: v.Code }))
+              .concat([basicBot, randomBot])
+          );
+        }}
+      >
+        start
+      </button>
+      <div>
+        {Object.keys(bots).map((b) => (
+          <div>{b}</div>
+        ))}
+      </div>
+      {colors.map((c) => (
+        <iframe
+          key={c}
+          title="codeframe"
+          id={playerConstants[c].iframeId}
+          src="about:blank"
+          sandbox="allow-same-origin allow-scripts"
+          style={{ display: "none" }}
+        />
+      ))}
+    </div>
+  ) : (
     <main className="flex gap-1">
       <div className="min-w-[680px]">
         <img src={mal} />
