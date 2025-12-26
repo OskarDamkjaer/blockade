@@ -6,7 +6,7 @@ import { basicBot, killerBot, playerStarter, randomBot } from "./builtinBots";
 import { CodeEditor } from "./code-editor";
 import { access, Color, currentPlayer, posContainsPawn } from "./game";
 import { createGameState, doTurn, nextTurnOptions } from "./gameAPI";
-import { loadCode, playerConstants, requestTurn } from "./helpers";
+import { loadCode, requestTurn } from "./helpers";
 import "./input.css";
 // @ts-ignore
 import mal from "./plan.jpg";
@@ -55,40 +55,38 @@ function App() {
       });
   }, []);
 
-  if (!isElo) {
-    // this is re-set on every render, yikes
-    window.onmessage = async ({ data }) => {
-      //console.log("winmess", data);
-      const { gameNbr, move } = JSON.parse(data);
+  // this is re-set on every render, yikes
+  window.onmessage = async ({ data }) => {
+    //console.log("winmess", data);
+    const { gameNbr, move } = JSON.parse(data);
 
-      if (parseInt(ref.current.value) !== 3000 || isElo) {
-        await new Promise((res) =>
-          setTimeout(res, 3000 - parseInt(ref.current.value))
-        );
-        // slider to zero is pause
-        const pause = async () => {
-          if (parseInt(ref.current.value) === 0) {
-            await new Promise((res) => setTimeout(res, 1000));
-            await pause();
-          }
-        };
-        await pause();
-      }
+    if (parseInt(ref.current.value) !== 3000 || isElo) {
+      await new Promise((res) =>
+        setTimeout(res, 3000 - parseInt(ref.current.value))
+      );
+      // slider to zero is pause
+      const pause = async () => {
+        if (parseInt(ref.current.value) === 0) {
+          await new Promise((res) => setTimeout(res, 1000));
+          await pause();
+        }
+      };
+      await pause();
+    }
 
-      if (gameNbr !== activeGameNbr) {
-        return;
-      }
-      const newState = doTurn(state, move);
-      setState(newState);
+    if (gameNbr !== activeGameNbr) {
+      return;
+    }
+    const newState = doTurn(state, move);
+    setState(newState);
 
-      if (newState.winner) {
-        console.log(newState.winner + " won");
-      } else {
-        const nextTurn = nextTurnOptions(newState);
-        requestTurn(currentPlayer(newState), nextTurn, gameNbr);
-      }
-    };
-  }
+    if (newState.winner) {
+      console.log(newState.winner + " won");
+    } else {
+      const nextTurn = nextTurnOptions(newState);
+      requestTurn(currentPlayer(newState), nextTurn, gameNbr);
+    }
+  };
 
   const startGame = () => {
     const currTime = new Date().valueOf();
@@ -112,7 +110,7 @@ function App() {
   const startForBots = async (allBots: { name: string; code: string }[]) => {
     const simulate = (bots: { name: string; code: string }[]) => {
       colors.forEach((c, i) => {
-        loadCode(c, bots[i].code);
+        loadCode(c, bots[i].code, true);
       });
       return new Promise<string[]>((res) => {
         let gameState = createGameState();
@@ -192,56 +190,27 @@ function App() {
       await rankedGame(play);
     }
 
-    console.log(
-      Object.entries(scoreboard)
-        .sort(([k1, v1], [k2, v2]) => v2.rating.mu - v1.rating.mu)
-        .map(
-          ([n, e]) =>
-            "bot: " +
-            n +
-            ", elo: " +
-            Math.floor(e.rating.mu * 50) +
-            " ,played: " +
-            e.played +
-            " ,wins: " +
-            e.wins
-        )
-        .join("\n")
-    );
+    const res = Object.entries(scoreboard)
+      .sort(([k1, v1], [k2, v2]) => v2.rating.mu - v1.rating.mu)
+      .map(
+        ([n, e]) =>
+          "bot: " +
+          n +
+          ", elo: " +
+          Math.floor(e.rating.mu * 50) +
+          " ,played: " +
+          e.played +
+          " ,wins: " +
+          e.wins
+      )
+      .join("\n");
+    console.log(res);
+    document.getElementById("elo").innerText = res;
   };
 
   const nextTurn = nextTurnOptions(state);
 
-  return isElo ? (
-    <div>
-      <button
-        onClick={() => {
-          startForBots(
-            Object.entries(bots)
-              .map(([k, v]) => ({ name: k, code: v.Code }))
-              .concat([basicBot, randomBot])
-          );
-        }}
-      >
-        start
-      </button>
-      <div>
-        {Object.keys(bots).map((b) => (
-          <div>{b}</div>
-        ))}
-      </div>
-      {colors.map((c) => (
-        <iframe
-          key={c}
-          title="codeframe"
-          id={playerConstants[c].iframeId}
-          src="about:blank"
-          sandbox="allow-same-origin allow-scripts"
-          style={{ display: "none" }}
-        />
-      ))}
-    </div>
-  ) : (
+  return (
     <main className="flex gap-1">
       <div className="min-w-[680px]">
         <img src={mal} />
@@ -362,6 +331,19 @@ function App() {
         >
           Github repo Link
         </a>
+        <button
+          onClick={() => {
+            startForBots(
+              Object.entries(bots).map(([k, v]) => ({
+                name: k,
+                code: v.Code,
+              }))
+            );
+          }}
+        >
+          elo-rate all submitted bots
+        </button>
+        <div id="elo" className="mb-4" />
       </span>
     </main>
   );

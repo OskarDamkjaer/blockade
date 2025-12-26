@@ -17,7 +17,7 @@ function loadPlayerCode(player: Color, code: string) {
     const iframe = doc.contentDocument;
     if (iframe) {
       iframe.open();
-      iframe.write(`<script>${code}</script>`);
+      iframe.write(`<!DOCTYPE html><script>${code}</script>`);
       iframe.close();
     }
   } else {
@@ -25,11 +25,16 @@ function loadPlayerCode(player: Color, code: string) {
   }
 }
 
-export const loadCode = (player: Color, code: string) => {
+export const loadCode = (
+  player: Color,
+  code: string,
+  disableConsole = false
+) => {
   loadPlayerCode(
     player,
     `
 function doTurn12345(data){
+${disableConsole ? "console.log = function() {};" : ""}
 ${transpile(code)}
 return doTurn(data);
 }
